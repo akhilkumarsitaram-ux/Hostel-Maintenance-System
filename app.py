@@ -305,6 +305,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         if user["role"] == "staff":
             return complaint["assigned_staff_id"] == user["id"]
         return False
+
     @app.route("/complaints/<int:complaint_id>", methods=["GET", "POST"])
     @login_required
     def complaint_detail(complaint_id: int):
@@ -322,9 +323,7 @@ def create_app(test_config: dict | None = None) -> Flask:
 
         if g.user["role"] == "staff" and closed and request.method == "POST":
             flash("Closed complaints cannot be edited by staff.", "error")
-            return redirect(
-                url_for("complaint_detail", complaint_id=complaint_id)
-            )
+            return redirect(url_for("complaint_detail", complaint_id=complaint_id))
 
         if g.user["role"] == "staff" and not closed:
             staff_form = StaffUpdateForm()
@@ -357,15 +356,10 @@ def create_app(test_config: dict | None = None) -> Flask:
         if g.user["role"] == "admin":
             staff_users = models.list_staff_users()
             admin_assign_form = AdminAssignForm()
-            admin_assign_form.staff_id.choices = [
-                (s["id"], s["full_name"]) for s in staff_users
-            ]
+            admin_assign_form.staff_id.choices = [(s["id"], s["full_name"]) for s in staff_users]
             admin_manage_form = AdminManageForm()
 
-            if (
-                admin_assign_form.assign_submit.data
-                and admin_assign_form.validate_on_submit()
-            ):
+            if admin_assign_form.assign_submit.data and admin_assign_form.validate_on_submit():
                 ok, msg = models.admin_assign_complaint(
                     complaint_id,
                     g.user["id"],
@@ -388,13 +382,9 @@ def create_app(test_config: dict | None = None) -> Flask:
 
                 flash(msg, "error")
 
-            elif (
-                admin_assign_form.assign_submit.data
-                and admin_assign_form.staff_id.errors
-            ):
+            elif admin_assign_form.assign_submit.data and admin_assign_form.staff_id.errors:
                 logger.warning(
-                    "Admin %s attempted to assign complaint %s "
-                    "to an invalid staff id",
+                    "Admin %s attempted to assign complaint %s to an invalid staff id",
                     g.user["username"],
                     complaint_id,
                 )
@@ -403,10 +393,7 @@ def create_app(test_config: dict | None = None) -> Flask:
                     "error",
                 )
 
-            if (
-                admin_manage_form.manage_submit.data
-                and admin_manage_form.validate_on_submit()
-            ):
+            if admin_manage_form.manage_submit.data and admin_manage_form.validate_on_submit():
                 new_status = admin_manage_form.status.data or None
                 new_priority = admin_manage_form.priority.data or None
 

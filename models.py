@@ -344,8 +344,7 @@ def _complaint_filter_clause(
     if search and search.strip():
         q = f"%{search.strip()}%"
         clauses.append(
-            "(c.description LIKE ? OR c.hostel LIKE ? OR c.room_number LIKE ? "
-            "OR c.category LIKE ?)"
+            "(c.description LIKE ? OR c.hostel LIKE ? OR c.room_number LIKE ? OR c.category LIKE ?)"
         )
         params.extend([q, q, q, q])
     where = " AND ".join(clauses) if clauses else "1=1"
