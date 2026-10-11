@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Hostel Maintenance{% endblock %} | Oxford Brookes Case Study</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="{{ url_for('index') }}">Hostel Maintenance Portal</a>
+      <p class="brand-sub">Academic prototype — Oxford Brookes University context</p>
+      {% if current_user %}
+      <nav class="nav-main" aria-label="Main navigation">
+        <span class="nav-user">{{ current_user.full_name }} ({{ current_user.role|capitalize }})</span>
+        {% if current_user.role == 'resident' %}
+        <a href="{{ url_for('resident_dashboard') }}">My complaints</a>
+        {% elif current_user.role == 'staff' %}
+        <a href="{{ url_for('staff_dashboard') }}">Assigned work</a>
+        {% elif current_user.role == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}">Administration</a>
+        {% endif %}
+        <a class="btn btn-outline" href="{{ url_for('logout') }}">Log out</a>
+      </nav>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-list" role="status">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>University Hostel Maintenance System — DevOps case study prototype. Not an official Oxford Brookes application.</p>
+    </div>
+  </footer>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Staff dashboard{% endblock %}
+{% block content %}
+<h1>Assigned maintenance work</h1>
+<p class="lead">Complaints assigned to you by the administration team.</p>
+
+<section class="panel">
+  <form method="get" class="filter-bar" action="{{ url_for('staff_dashboard') }}">
+    <label for="search">Search</label>
+    <input type="search" id="search" name="search" class="input" value="{{ filters.search }}" placeholder="Description, hostel…">
+    <label for="status">Status</label>
+    <select id="status" name="status" class="input">
+      <option value="">All statuses</option>
+      {% for s in statuses %}
+      <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+  </form>
+
+  {% if complaints %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Resident</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in complaints %}
+        <tr>
+          <td>#{{ c.id }}</td>
+          <td>{{ c.resident_name }}</td>
+          <td>{{ c.category }}</td>
+          <td>{{ c.hostel }}, {{ c.room_number }}</td>
+          <td><span class="badge priority-{{ c.priority|lower }}">{{ c.priority }}</span></td>
+          <td><span class="badge status-{{ c.status|replace(' ', '-')|lower }}">{{ c.status }}</span></td>
+          <td>{{ c.updated_at }}</td>
+          <td><a href="{{ url_for('complaint_detail', complaint_id=c.id) }}">Open</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No assigned complaints match your filters.</p>
+  {% endif %}
+</section>
+{% endblock %}

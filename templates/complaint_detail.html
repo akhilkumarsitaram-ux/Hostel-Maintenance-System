@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Complaint #{{ complaint.id }}{% endblock %}
+{% block content %}
+<p><a href="javascript:history.back()">&larr; Back</a></p>
+<h1>Complaint #{{ complaint.id }}</h1>
+
+<div class="detail-grid">
+  <section class="panel">
+    <h2>Details</h2>
+    <dl class="detail-list">
+      <dt>Status</dt>
+      <dd><span class="badge status-{{ complaint.status|replace(' ', '-')|lower }}">{{ complaint.status }}</span></dd>
+      <dt>Category</dt>
+      <dd>{{ complaint.category }}</dd>
+      <dt>Priority</dt>
+      <dd><span class="badge priority-{{ complaint.priority|lower }}">{{ complaint.priority }}</span></dd>
+      <dt>Location</dt>
+      <dd>{{ complaint.hostel }}, room {{ complaint.room_number }}</dd>
+      <dt>Resident</dt>
+      <dd>{{ complaint.resident_name }}</dd>
+      <dt>Assigned staff</dt>
+      <dd>{{ complaint.staff_name or 'Not assigned' }}</dd>
+      <dt>Submitted</dt>
+      <dd>{{ complaint.created_at }}</dd>
+      <dt>Last updated</dt>
+      <dd>{{ complaint.updated_at }}</dd>
+      <dt>Description</dt>
+      <dd class="description">{{ complaint.description }}</dd>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>Update history</h2>
+    {% if updates %}
+    <ol class="timeline">
+      {% for u in updates %}
+      <li class="timeline-item">
+        <time datetime="{{ u.created_at }}">{{ u.created_at }}</time>
+        <p class="timeline-meta">{{ u.updater_name }} ({{ u.updater_role }})</p>
+        {% if u.old_status or u.new_status %}
+        <p class="timeline-status">
+          {% if u.old_status %}{{ u.old_status }} → {% endif %}{{ u.new_status or u.old_status }}
+        </p>
+        {% endif %}
+        <p>{{ u.note }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="empty">No history yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% if staff_form and not closed %}
+<section class="panel">
+  <h2>Update status</h2>
+  <form method="post" action="{{ url_for('complaint_detail', complaint_id=complaint.id) }}">
+    {{ staff_form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-group">
+        {{ staff_form.status.label }}
+        {{ staff_form.status(class="input") }}
+      </div>
+    </div>
+    <div class="form-group">
+      {{ staff_form.note.label }}
+      {{ staff_form.note(class="input textarea", rows="3") }}
+      {% for error in staff_form.note.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+    {{ staff_form.submit(class="btn btn-primary") }}
+  </form>
+</section>
+{% elif staff_form and closed %}
+<p class="hint">This complaint is closed and cannot be edited by staff.</p>
+{% endif %}
+
+{% if admin_assign_form %}
+<section class="panel">
+  <h2>Assign to staff</h2>
+  <form method="post" action="{{ url_for('complaint_detail', complaint_id=complaint.id) }}" class="inline-form" data-confirm="Assign this complaint to the selected staff member?">
+    {{ admin_assign_form.hidden_tag() }}
+    {{ admin_assign_form.staff_id(class="input") }}
+    {{ admin_assign_form.assign_submit(class="btn btn-secondary") }}
+  </form>
+</section>
+{% endif %}
+
+{% if admin_manage_form %}
+<section class="panel">
+  <h2>Admin: priority &amp; status</h2>
+  <form method="post" action="{{ url_for('complaint_detail', complaint_id=complaint.id) }}" data-confirm="Save administrative changes to this complaint?">
+    {{ admin_manage_form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-group">
+        {{ admin_manage_form.status.label }}
+        {{ admin_manage_form.status(class="input") }}
+      </div>
+      <div class="form-group">
+        {{ admin_manage_form.priority.label }}
+        {{ admin_manage_form.priority(class="input") }}
+      </div>
+    </div>
+    <div class="form-group">
+      {{ admin_manage_form.note.label }}
+      {{ admin_manage_form.note(class="input textarea", rows="2") }}
+    </div>
+    {{ admin_manage_form.manage_submit(class="btn btn-primary") }}
+  </form>
+</section>
+{% endif %}
+{% endblock %}

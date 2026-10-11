@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Resident dashboard{% endblock %}
+{% block content %}
+<h1>My maintenance complaints</h1>
+<p class="lead">Submit a new issue or track existing requests for your room.</p>
+
+<section class="panel">
+  <h2>Submit a complaint</h2>
+  <form method="post" action="{{ url_for('resident_dashboard') }}" class="complaint-form">
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-group">
+        {{ form.category.label }}
+        {{ form.category(class="input") }}
+      </div>
+      <div class="form-group">
+        {{ form.priority.label }}
+        {{ form.priority(class="input") }}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        {{ form.hostel.label }}
+        {{ form.hostel(class="input") }}
+      </div>
+      <div class="form-group">
+        {{ form.room_number.label }}
+        {{ form.room_number(class="input") }}
+      </div>
+    </div>
+    <div class="form-group">
+      {{ form.description.label }}
+      {{ form.description(class="input textarea", rows="4") }}
+      {% for error in form.description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+    {{ form.submit(class="btn btn-primary") }}
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Your complaints</h2>
+  <form method="get" class="filter-bar" action="{{ url_for('resident_dashboard') }}">
+    <label for="search">Search</label>
+    <input type="search" id="search" name="search" class="input" value="{{ filters.search }}" placeholder="Description, hostel, room…">
+    <label for="status">Status</label>
+    <select id="status" name="status" class="input">
+      <option value="">All statuses</option>
+      {% for s in statuses %}
+      <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+  </form>
+
+  {% if complaints %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Assigned to</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in complaints %}
+        <tr>
+          <td>#{{ c.id }}</td>
+          <td>{{ c.category }}</td>
+          <td>{{ c.hostel }}, {{ c.room_number }}</td>
+          <td><span class="badge priority-{{ c.priority|lower }}">{{ c.priority }}</span></td>
+          <td><span class="badge status-{{ c.status|replace(' ', '-')|lower }}">{{ c.status }}</span></td>
+          <td>{{ c.created_at }}</td>
+          <td>{{ c.staff_name or '—' }}</td>
+          <td><a href="{{ url_for('complaint_detail', complaint_id=c.id) }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No complaints match your filters.</p>
+  {% endif %}
+</section>
+{% endblock %}
